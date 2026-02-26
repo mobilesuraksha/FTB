@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FTB Master Admin | Central Control</title>
+    
+    <meta name="theme-color" content="#0f172a">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f4f4f5; }
+        h1, h2, h3, .brand-font { font-family: 'Poppins', sans-serif; }
+        
+        .glass-panel { background: rgba(255, 255, 255, 0.90); backdrop-filter: blur(15px); }
+        .bg-gradient-brand { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); }
+        .bg-gradient-dark { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); }
+        
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        .slide-up { animation: slideUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body class="text-slate-800 flex h-screen overflow-hidden selection:bg-orange-200">
+
+    <div id="loginOverlay" class="fixed inset-0 z-[100] flex flex-col items-center justify-center p-5 fade-in bg-[url('https://www.transparenttextures.com/patterns/food.png')] bg-slate-900">
+        <div class="absolute inset-0 bg-slate-900/90 backdrop-blur-md z-0"></div>
+        <div class="glass-panel p-8 md:p-10 rounded-[2.5rem] shadow-[0_20px_60px_rgba(0,0,0,0.4)] w-full max-w-sm text-center border border-white/10 relative z-10 slide-up">
+            <div class="w-24 h-24 bg-gradient-dark text-orange-500 rounded-3xl flex items-center justify-center mx-auto mb-6 text-5xl shadow-xl transform rotate-3 hover:rotate-0 transition duration-300 border border-slate-700">
+                <i class="fas fa-crown"></i>
+            </div>
+            <h2 class="text-3xl font-black mb-1 text-slate-800 tracking-tight">FTB Admin</h2>
+            <p class="text-slate-500 text-sm font-semibold mb-8">Master Network Control</p>
+            <div class="relative mb-8">
+                <input type="password" id="adminPin" placeholder="Enter PIN" class="w-full py-4 text-center bg-white/80 border border-slate-200 rounded-2xl font-black text-3xl tracking-[0.4em] outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 shadow-inner transition text-slate-800">
+            </div>
+            <button onclick="masterLogin()" class="w-full bg-gradient-brand text-white font-black py-4 rounded-2xl hover:shadow-lg hover:shadow-orange-500/40 transition active:scale-95 text-lg">
+                ACCESS SYSTEM
+            </button>
+        </div>
+    </div>
+
+    <div id="appContainer" class="flex w-full hidden">
+        
+        <aside class="w-72 bg-slate-900 text-white flex flex-col h-full z-40 shadow-2xl transition-transform transform -translate-x-full md:translate-x-0 absolute md:relative">
+            <div class="h-24 flex items-center px-6 border-b border-slate-800 bg-slate-950 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
+                <div class="w-12 h-12 bg-gradient-dark border border-slate-700 text-orange-500 rounded-xl flex items-center justify-center font-bold shadow-lg mr-4 text-xl relative z-10"><i class="fas fa-crown"></i></div>
+                <div class="min-w-0 relative z-10">
+                    <h1 class="font-black text-white text-xl tracking-wide">FTB Control</h1>
+                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Master Node</span>
+                </div>
+            </div>
+
+            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+                <button onclick="nav('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center px-5 py-4 rounded-2xl font-bold transition bg-orange-500/20 text-orange-400">
+                    <i class="fas fa-chart-pie w-8 text-lg"></i> Network Pulse
+                </button>
+                <button onclick="nav('partners')" id="nav-partners" class="nav-item w-full flex items-center px-5 py-4 text-slate-400 hover:bg-slate-800 hover:text-white rounded-2xl font-bold transition">
+                    <i class="fas fa-store w-8 text-lg"></i> Partner Ledgers
+                </button>
+                <button onclick="nav('history')" id="nav-history" class="nav-item w-full flex items-center px-5 py-4 text-slate-400 hover:bg-slate-800 hover:text-white rounded-2xl font-bold transition">
+                    <i class="fas fa-globe w-8 text-lg"></i> Global Audit
+                </button>
+                <button onclick="nav('settings')" id="nav-settings" class="nav-item w-full flex items-center px-5 py-4 text-slate-400 hover:bg-slate-800 hover:text-white rounded-2xl font-bold transition">
+                    <i class="fas fa-sliders-h w-8 text-lg"></i> Config Engine
+                </button>
+                
+                <div class="pt-6 mt-4 border-t border-slate-800 px-2">
+                    <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50 relative overflow-hidden">
+                        <div class="absolute -right-2 -bottom-2 text-5xl text-slate-700 opacity-30"><i class="fas fa-percent"></i></div>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 relative z-10">Live Commission</p>
+                        <h3 class="text-2xl font-black text-green-400 relative z-10" id="sidebarCommRate">10%</h3>
+                    </div>
+                </div>
+            </nav>
+            <button onclick="location.reload()" class="m-5 bg-slate-800/80 border border-slate-700 text-red-400 hover:bg-red-500/20 hover:text-red-300 py-4 rounded-2xl font-bold transition flex items-center justify-center gap-2">
+                <i class="fas fa-lock"></i> Lock System
+            </button>
+        </aside>
+
+        <main class="flex-1 flex flex-col min-w-0 bg-slate-50/50">
+            
+            <header class="h-24 glass-panel border-b border-slate-200 flex items-center justify-between px-5 md:px-10 sticky top-0 z-30 shadow-sm">
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleSidebar()" class="md:hidden text-slate-600 text-xl"><i class="fas fa-bars"></i></button>
+                    <h2 id="pageTitle" class="text-3xl font-black text-slate-800 tracking-tight">Network Pulse</h2>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="flex items-center gap-2 text-[10px] font-black text-green-600 bg-green-100 px-4 py-2 rounded-xl border border-green-200 uppercase tracking-widest">
+                        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> Systems Up
+                    </span>
+                </div>
+            </header>
+
+            <div class="flex-1 overflow-y-auto p-5 md:p-10 relative">
+
+                <div id="view-dashboard" class="space-y-8 fade-in">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden group hover:border-orange-200 transition">
+                            <i class="fas fa-store absolute -right-4 -bottom-4 text-7xl text-slate-50 group-hover:scale-110 transition duration-500"></i>
+                            <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2 relative z-10">Total Partners</p>
+                            <h3 class="text-5xl font-black text-slate-800 relative z-10" id="statRestros">0</h3>
+                        </div>
+                        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden group hover:border-blue-200 transition">
+                            <i class="fas fa-users absolute -right-4 -bottom-4 text-7xl text-slate-50 group-hover:scale-110 transition duration-500"></i>
+                            <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2 relative z-10">Global Bookings</p>
+                            <h3 class="text-5xl font-black text-blue-600 relative z-10" id="statBookings">0</h3>
+                        </div>
+                        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden group hover:border-green-200 transition">
+                            <i class="fas fa-money-bill-wave absolute -right-4 -bottom-4 text-7xl text-slate-50 group-hover:scale-110 transition duration-500"></i>
+                            <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2 relative z-10">Network Advance</p>
+                            <h3 class="text-4xl font-black text-green-500 relative z-10 mt-1">₹<span id="statAdvance">0</span></h3>
+                        </div>
+                        <div class="bg-gradient-dark p-6 rounded-3xl shadow-xl relative overflow-hidden group border border-slate-700 transform hover:-translate-y-1 transition duration-300">
+                            <div class="absolute top-0 right-0 w-32 h-32 bg-orange-500/20 rounded-full blur-2xl -mr-10 -mt-10"></div>
+                            <p class="text-orange-400 text-[10px] font-black uppercase tracking-widest mb-2 relative z-10">Commission Dues</p>
+                            <h3 class="text-4xl font-black text-white relative z-10 mt-1">₹<span id="statCommission">0</span></h3>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                            <h3 class="font-black text-slate-800 text-lg"><i class="fas fa-bolt text-orange-500 mr-2"></i>Live Operations Feed</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <tbody id="liveActivityList" class="divide-y divide-slate-100 text-sm"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-partners" class="hidden fade-in space-y-6">
+                    <div class="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="p-6 md:p-8 border-b border-slate-100 bg-slate-50/50">
+                            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                                <div>
+                                    <h3 class="font-black text-slate-800 text-xl">Partner Ledger & Controls</h3>
+                                    <p class="text-sm text-slate-500 font-medium mt-1">Audit, Add manually, Edit, and Collect fees.</p>
+                                </div>
+                                <div class="flex flex-wrap gap-2">
+                                    <input type="text" id="searchPartner" placeholder="Search shop/username..." class="p-3 px-5 bg-white border border-slate-300 rounded-xl outline-none focus:border-orange-500 font-bold text-sm shadow-sm" onkeyup="renderPartners()">
+                                    <button onclick="openAddPartnerModal()" class="bg-gradient-brand text-white px-5 py-3 rounded-xl font-bold text-sm hover:shadow-lg transition flex items-center gap-2"><i class="fas fa-plus"></i> Add Shop</button>
+                                    <button onclick="exportCSV()" class="bg-slate-900 text-white px-5 py-3 rounded-xl font-bold text-sm hover:bg-slate-800 transition shadow-lg flex items-center gap-2"><i class="fas fa-file-csv"></i> Export</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead class="text-slate-400 text-[10px] uppercase font-black tracking-widest border-b border-slate-200 bg-white">
+                                    <tr>
+                                        <th class="p-5 pl-8">Business Details</th>
+                                        <th class="p-5 text-center">Status</th>
+                                        <th class="p-5 text-center">Volume Generated</th>
+                                        <th class="p-5 text-right bg-orange-50/30">Your Commission</th>
+                                        <th class="p-5 text-center pr-8">Actions & Controls</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="partnerTableList" class="divide-y divide-slate-100 text-sm">
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-history" class="hidden fade-in">
+                    <div class="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="p-6 md:p-8 border-b border-slate-100 bg-slate-50/50">
+                            <div class="flex flex-col gap-4 mb-4">
+                                <div>
+                                    <h3 class="font-black text-slate-800 text-xl">Global Transaction Audit</h3>
+                                    <p class="text-sm text-slate-500 font-medium mt-1">Advanced search and filter network bookings.</p>
+                                </div>
+                                
+                                <div class="flex flex-wrap items-center gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm w-full">
+                                    <div class="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 flex-1 min-w-[200px]">
+                                        <i class="fas fa-search text-slate-400 mr-2"></i>
+                                        <input type="text" id="searchHistory" placeholder="Search User, Shop or UTR..." class="bg-transparent border-none outline-none w-full font-bold text-sm text-slate-700" onkeyup="renderHistory()">
+                                    </div>
+                                    <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200">
+                                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">From</span>
+                                        <input type="date" id="dateFrom" class="p-2 bg-white border border-slate-200 rounded-lg outline-none text-sm font-bold text-slate-700" onchange="renderHistory()">
+                                    </div>
+                                    <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200">
+                                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">To</span>
+                                        <input type="date" id="dateTo" class="p-2 bg-white border border-slate-200 rounded-lg outline-none text-sm font-bold text-slate-700" onchange="renderHistory()">
+                                    </div>
+                                    <button onclick="clearHistoryFilters()" class="bg-slate-800 text-white px-5 py-3 rounded-xl font-bold text-sm hover:bg-slate-700 transition"><i class="fas fa-sync-alt mr-1"></i> Reset</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead class="text-slate-400 text-[10px] uppercase font-black tracking-widest border-b border-slate-200 bg-white">
+                                    <tr>
+                                        <th class="p-5 pl-8">Timestamp</th>
+                                        <th class="p-5">Partner Restro</th>
+                                        <th class="p-5">Guest Details & UTR</th>
+                                        <th class="p-5">Advance Flow</th>
+                                        <th class="p-5 text-right pr-8">Ticket Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="globalHistoryList" class="divide-y divide-slate-100 text-sm">
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-settings" class="hidden fade-in max-w-3xl space-y-6">
+                    <div class="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden p-8 md:p-10">
+                        <h3 class="font-black text-slate-800 text-2xl mb-8 flex items-center gap-3"><i class="fas fa-sliders-h text-orange-500"></i> Config Engine</h3>
+                        
+                        <div class="bg-slate-50 p-6 md:p-8 rounded-3xl border border-slate-200 mb-8">
+                            <h4 class="font-black text-slate-800 text-lg mb-1">Revenue Structure (%)</h4>
+                            <p class="text-xs font-medium text-slate-500 mb-6">Modify platform commission dynamically.</p>
+                            <div class="flex items-center gap-4">
+                                <input type="number" id="setCommission" class="w-32 p-4 bg-white border border-slate-300 rounded-2xl font-black text-center outline-none focus:border-orange-500 text-2xl">
+                                <span class="text-3xl font-black text-slate-300">%</span>
+                                <button onclick="saveSettings()" class="bg-slate-900 text-white font-black px-8 py-4 rounded-2xl hover:bg-slate-800 transition active:scale-95 shadow-lg text-lg ml-auto">Inject Rate</button>
+                            </div>
+                        </div>
+
+                        <div class="bg-blue-50 p-6 md:p-8 rounded-3xl border border-blue-200">
+                            <h4 class="font-black text-blue-900 text-lg mb-1"><i class="fas fa-bullhorn"></i> Global Broadcast</h4>
+                            <textarea id="setNotice" rows="2" placeholder="e.g., Happy Diwali! Zero commission week." class="w-full p-5 bg-white border border-blue-300 rounded-2xl font-bold outline-none focus:border-blue-500 mb-5 resize-none text-blue-900 mt-4"></textarea>
+                            <button onclick="saveNotice()" class="bg-blue-600 text-white font-black px-8 py-4 rounded-2xl hover:bg-blue-700 transition active:scale-95 shadow-lg w-full md:w-auto text-lg">Push Notice</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="modal-profile" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[200] hidden flex items-center justify-center p-5 fade-in">
+        <div class="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden relative slide-up">
+            <div class="h-40 bg-gradient-dark relative">
+                <button onclick="closeProfileModal()" class="absolute top-5 right-5 w-10 h-10 bg-white/10 text-white rounded-full flex items-center justify-center hover:bg-white/30 backdrop-blur-md z-10"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="px-8 pb-8 relative">
+                <div class="w-28 h-28 rounded-3xl bg-white border-4 border-white shadow-xl -mt-14 mb-4 overflow-hidden mx-auto"><img id="modLogo" src="" class="w-full h-full object-cover"></div>
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-black text-slate-800" id="modName">Name</h2>
+                    <p class="text-[10px] font-black text-slate-400 mt-1 uppercase"><i class="fas fa-user-circle text-orange-500 mr-1"></i> User: <span id="modUsername">User</span></p>
+                    <p class="text-[10px] font-black text-slate-400 mt-1 uppercase"><i class="fas fa-phone-alt text-orange-500 mr-1"></i> Ph: <span id="modPhone">Phone</span></p>
+                </div>
+                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100 mb-4">
+                    <div class="text-[10px] font-black text-slate-400 uppercase mb-1.5">Address</div>
+                    <div class="font-bold text-slate-700 text-sm" id="modAddress">Address</div>
+                </div>
+                <div class="flex gap-4">
+                    <div class="flex-1 bg-green-50 p-5 rounded-2xl border border-green-200">
+                        <div class="text-[10px] font-black text-green-600 uppercase mb-1.5"><i class="fas fa-wallet"></i> UPI</div>
+                        <div class="font-black text-green-800 text-sm truncate" id="modUpi">UPI</div>
+                    </div>
+                    <a id="modMapLink" href="#" target="_blank" class="w-28 bg-blue-50 p-5 rounded-2xl border border-blue-200 flex flex-col items-center justify-center text-blue-600 hover:bg-blue-600 hover:text-white transition">
+                        <i class="fas fa-map-marked-alt text-2xl mb-2"></i><div class="text-[10px] font-black uppercase">Map</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-manage-partner" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[200] hidden flex flex-col justify-end md:justify-center p-0 md:p-5 fade-in">
+        <div class="bg-white w-full max-w-2xl mx-auto rounded-t-[2.5rem] md:rounded-[2.5rem] shadow-2xl relative overflow-hidden flex flex-col max-h-[95vh] slide-up">
+            <div class="p-5 md:p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50 sticky top-0 z-10">
+                <h3 class="text-xl font-black text-slate-800" id="managePartnerTitle">Add New Partner</h3>
+                <button onclick="closeManagePartnerModal()" class="w-10 h-10 bg-slate-200 text-slate-600 rounded-full flex items-center justify-center hover:bg-slate-300 transition"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="p-6 md:p-8 overflow-y-auto space-y-4 bg-white">
+                <input type="hidden" id="editPartnerId">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-2">Shop Name</label>
+                        <input type="text" id="mngName" placeholder="Restaurant Name" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none focus:border-orange-500">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-2">Contact Phone</label>
+                        <input type="tel" id="mngPhone" placeholder="10-digit number" maxlength="10" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none focus:border-orange-500">
+                    </div>
+                    
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-black text-blue-600 uppercase tracking-widest pl-2"><i class="fas fa-user"></i> Login Username</label>
+                        <input type="text" id="mngUsername" placeholder="e.g. ramkishan01" class="w-full p-4 bg-blue-50 border border-blue-200 rounded-2xl font-bold outline-none focus:border-blue-500 text-blue-900">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-black text-blue-600 uppercase tracking-widest pl-2"><i class="fas fa-lock"></i> Login Password</label>
+                        <input type="text" id="mngPassword" placeholder="Set strong password" class="w-full p-4 bg-blue-50 border border-blue-200 rounded-2xl font-bold outline-none focus:border-blue-500 text-blue-900">
+                    </div>
+
+                    <div class="space-y-1 md:col-span-2">
+                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-2">Complete Address</label>
+                        <input type="text" id="mngAddress" placeholder="Full Location" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none focus:border-orange-500">
+                    </div>
+                    
+                    <div class="space-y-1 md:col-span-2">
+                        <label class="text-[10px] font-black text-green-600 uppercase tracking-widest pl-2"><i class="fas fa-qrcode"></i> Receiving UPI ID</label>
+                        <input type="text" id="mngUpi" placeholder="e.g. 9876543210@ybl" class="w-full p-4 bg-green-50 border border-green-200 rounded-2xl font-bold outline-none focus:border-green-500 text-green-900">
+                    </div>
+
+                    <div class="space-y-1 md:col-span-2 p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-2 block mb-2">GPS Location Tracking</label>
+                        <button onclick="fetchAdminLocation()" id="adminLocBtn" class="w-full bg-slate-900 text-white p-4 rounded-xl font-bold hover:bg-slate-800 transition flex items-center justify-center gap-2 shadow-md">
+                            <i class="fas fa-location-arrow"></i> Fetch Current Shop Location
+                        </button>
+                        <p class="text-[10px] text-slate-400 mt-2 text-center">Stand at the restaurant and click to save exact map coordinates.</p>
+                        <input type="hidden" id="mngLat"><input type="hidden" id="mngLng">
+                    </div>
+                </div>
+
+                <div class="pt-4 mt-2">
+                    <button onclick="saveManagedPartner()" class="w-full bg-gradient-brand text-white font-black py-4 rounded-2xl hover:shadow-lg hover:shadow-orange-500/30 transition active:scale-95 text-lg">Save Partner & Go Live</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+        import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc, setDoc, addDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAVZfBaUEQxszbuDXsoFJ6uW2_5XqBulRE",
+            authDomain: "waiting-9617c.firebaseapp.com",
+            projectId: "waiting-9617c",
+            storageBucket: "waiting-9617c.firebasestorage.app",
+            messagingSenderId: "698708284819",
+            appId: "1:698708284819:web:3732cf42140cba84494466"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // GLOBAL STATES
+        let sysCommissionRate = 0.10; 
+        let allRestaurants = [];
+        let allBookings = [];
+
+        // --- 1. LOGIN & NAVIGATION ---
+        window.masterLogin = () => {
+            if(document.getElementById('adminPin').value === "12345") {
+                document.getElementById('loginOverlay').classList.add('hidden');
+                document.getElementById('appContainer').classList.remove('hidden');
+                listenSystemSettings();
+                startSystemSync();
+            } else {
+                Swal.fire({icon: 'error', title: 'Access Denied', text: 'Incorrect Master PIN.', confirmButtonColor: '#0f172a'});
+            }
+        };
+
+        window.nav = (viewId) => {
+            ['dashboard', 'partners', 'history', 'settings'].forEach(v => {
+                document.getElementById('view-'+v).classList.add('hidden');
+                document.getElementById('nav-'+v).classList.remove('bg-orange-500/20', 'text-orange-400');
+                document.getElementById('nav-'+v).classList.add('text-slate-400');
+            });
+            document.getElementById('view-'+viewId).classList.remove('hidden');
+            document.getElementById('nav-'+viewId).classList.remove('text-slate-400');
+            document.getElementById('nav-'+viewId).classList.add('bg-orange-500/20', 'text-orange-400');
+            
+            const titles = { 'dashboard': 'Network Pulse', 'partners': 'Partner Ledgers', 'history': 'Global Audit', 'settings': 'Config Engine' };
+            document.getElementById('pageTitle').innerText = titles[viewId];
+            if(window.innerWidth < 768) toggleSidebar();
+        };
+
+        window.toggleSidebar = () => document.querySelector('aside').classList.toggle('-translate-x-full');
+
+        // --- 2. CONFIG SETTINGS ---
+        function listenSystemSettings() {
+            onSnapshot(doc(db, "platform_settings", "general"), (docSnap) => {
+                if(docSnap.exists()) {
+                    const data = docSnap.data();
+                    sysCommissionRate = (data.commissionRate || 10) / 100;
+                    document.getElementById('sidebarCommRate').innerText = (sysCommissionRate * 100) + '%';
+                    document.getElementById('setCommission').value = sysCommissionRate * 100;
+                    document.getElementById('setNotice').value = data.globalNotice || "";
+                    renderAll(); 
+                }
+            });
+        }
+        window.saveSettings = async () => {
+            const val = document.getElementById('setCommission').value;
+            if(!val || val < 0 || val > 100) return Swal.fire('Error', 'Invalid percentage', 'error');
+            await setDoc(doc(db, "platform_settings", "general"), { commissionRate: Number(val) }, { merge: true });
+            Swal.fire({toast:true, position:'top-end', icon:'success', title:'Rate Updated', showConfirmButton:false, timer:2000});
+        };
+        window.saveNotice = async () => {
+            const text = document.getElementById('setNotice').value;
+            await setDoc(doc(db, "platform_settings", "general"), { globalNotice: text }, { merge: true });
+            Swal.fire({toast:true, position:'top-end', icon:'success', title:'Notice Broadcasted', showConfirmButton:false, timer:2000});
+        };
+
+        // --- 3. CORE DATA SYNC ---
+        function startSystemSync() {
+            onSnapshot(query(collection(db, "restaurants"), orderBy("createdAt", "desc")), (snap) => {
+                allRestaurants = []; snap.forEach(d => allRestaurants.push({ id: d.id, ...d.data() }));
+                renderAll();
+            });
+
+            onSnapshot(query(collection(db, "chain_bookings"), orderBy("createdAt", "desc")), (snap) => {
+                allBookings = []; snap.forEach(d => allBookings.push({ id: d.id, ...d.data() }));
+                renderAll();
+            });
+        }
+
+        function renderAll() {
+            renderDashboard();
+            renderPartners();
+            renderHistory();
+        }
+
+        // --- 4. RENDER DASHBOARD ---
+        function renderDashboard() {
+            let totalAdvanceGlobal = 0, totalCommissionDueGlobal = 0;
+            const liveActivity = document.getElementById('liveActivityList');
+            liveActivity.innerHTML = "";
+
+            allBookings.forEach((b, index) => {
+                const isSuccess = (b.status === 'confirmed' || b.status === 'completed');
+                if(isSuccess) totalAdvanceGlobal += Number(b.advancePaid || 0);
+                
+                if(index < 5) {
+                    let timeStr = b.createdAt ? new Date(b.createdAt.seconds * 1000).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) : "Just Now";
+                    let badge = isSuccess ? `<span class="text-green-500"><i class="fas fa-check-circle"></i></span>` : `<span class="text-amber-500"><i class="fas fa-clock"></i></span>`;
+                    liveActivity.innerHTML += `
+                        <tr class="hover:bg-slate-50 border-b border-slate-50">
+                            <td class="p-4 text-xs font-bold text-slate-500">${timeStr}</td>
+                            <td class="p-4 font-black text-slate-800">${b.restaurantName}</td>
+                            <td class="p-4 font-bold text-slate-700">₹${b.advancePaid}</td>
+                            <td class="p-4 text-right">${badge}</td>
+                        </tr>`;
+                }
+            });
+
+            allRestaurants.forEach(r => {
+                let rBookings = allBookings.filter(b => b.restaurantId === r.id && (b.status === 'confirmed' || b.status === 'completed'));
+                let rTotalAdvance = rBookings.reduce((sum, b) => sum + Number(b.advancePaid || 0), 0);
+                let currentDues = (rTotalAdvance * sysCommissionRate) - (r.settledCommission || 0);
+                if(currentDues > 0) totalCommissionDueGlobal += currentDues;
+            });
+
+            document.getElementById('statRestros').innerText = allRestaurants.length;
+            document.getElementById('statBookings').innerText = allBookings.length;
+            document.getElementById('statAdvance').innerText = totalAdvanceGlobal;
+            document.getElementById('statCommission').innerText = totalCommissionDueGlobal.toFixed(2);
+        }
+
+        // --- 5. RENDER PARTNERS (WITH SEARCH) ---
+        window.renderPartners = () => {
+            const searchTerm = document.getElementById('searchPartner').value.toLowerCase();
+            const partnerTable = document.getElementById('partnerTableList');
+            partnerTable.innerHTML = "";
+
+            allRestaurants.filter(r => 
+                (r.name && r.name.toLowerCase().includes(searchTerm)) || 
+                (r.phone && r.phone.includes(searchTerm)) ||
+                (r.username && r.username.toLowerCase().includes(searchTerm))
+            ).forEach(r => {
+                let rBookings = allBookings.filter(b => b.restaurantId === r.id && (b.status === 'confirmed' || b.status === 'completed'));
+                let rTotalAdvance = rBookings.reduce((sum, b) => sum + Number(b.advancePaid || 0), 0);
+                let settled = r.settledCommission || 0; 
+                let currentDues = (rTotalAdvance * sysCommissionRate) - settled;
+
+                let statusHtml = r.status === 'active' ? `<span class="bg-green-100 text-green-700 px-3 py-1 rounded-lg text-[10px] font-black uppercase"><i class="fas fa-check-circle"></i> Active</span>` : 
+                                 (r.status === 'suspended' ? `<span class="bg-red-100 text-red-700 px-3 py-1 rounded-lg text-[10px] font-black uppercase"><i class="fas fa-ban"></i> Suspended</span>` : `<span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-lg text-[10px] font-black uppercase"><i class="fas fa-clock"></i> Pending</span>`);
+
+                // Main Toggle Action
+                let toggleAction = (r.status === 'active') 
+                    ? `<button onclick="updateRestroStatus('${r.id}', 'suspended')" class="w-full bg-red-50 text-red-600 border border-red-200 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition">Suspend</button>`
+                    : `<button onclick="updateRestroStatus('${r.id}', 'active')" class="w-full bg-slate-900 text-white py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition">Approve</button>`;
+
+                let duesHtml = currentDues > 0 
+                    ? `<div class="text-orange-600 font-black text-xl mb-1.5">₹${currentDues.toFixed(2)}</div>
+                       <button onclick="settleDues('${r.id}', ${currentDues}, ${settled})" class="text-[10px] font-black bg-slate-900 text-white px-3 py-1.5 rounded-lg hover:bg-slate-800 uppercase tracking-widest transition shadow-md">Mark Paid</button>`
+                    : `<div class="text-green-500 font-black text-xl mb-1.5">₹0.00</div><div class="text-[10px] text-slate-400 font-black uppercase tracking-widest"><i class="fas fa-check"></i> Clean</div>`;
+
+                const rDataStr = encodeURIComponent(JSON.stringify(r));
+
+                partnerTable.innerHTML += `
+                    <tr class="hover:bg-slate-50 border-b border-slate-100 transition group">
+                        <td class="p-5 pl-8">
+                            <div class="font-black text-slate-800 text-lg mb-0.5">${r.name}</div>
+                            <div class="text-[10px] font-bold text-slate-500 tracking-widest uppercase mb-2"><i class="fas fa-user text-blue-500 mr-1"></i> ID: ${r.username || 'Not Set'}</div>
+                            <button onclick="viewProfile('${rDataStr}')" class="text-[10px] font-black text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg border border-blue-200 transition uppercase tracking-widest"><i class="fas fa-eye mr-1"></i> Inspect</button>
+                        </td>
+                        <td class="p-5 text-center">${statusHtml}</td>
+                        <td class="p-5 text-center">
+                            <div class="font-black text-slate-700 text-xl">${rBookings.length} <span class="text-[10px] uppercase text-slate-400">Trx</span></div>
+                            <div class="font-bold text-green-600 text-sm mt-1">₹${rTotalAdvance} <span class="text-[10px] text-slate-400 uppercase">Rev</span></div>
+                        </td>
+                        <td class="p-5 text-right bg-orange-50/30 border-l border-r border-slate-100">${duesHtml}</td>
+                        <td class="p-5 pr-8 text-center w-48 space-y-2">
+                            ${toggleAction}
+                            <div class="flex gap-2">
+                                <button onclick="openEditPartnerModal('${rDataStr}')" class="flex-1 bg-slate-100 text-slate-600 py-2 rounded-xl hover:bg-slate-200 transition text-sm"><i class="fas fa-pen"></i></button>
+                                <button onclick="adminDeletePartner('${r.id}')" class="flex-1 bg-red-50 text-red-500 py-2 rounded-xl hover:bg-red-100 transition text-sm"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>`;
+            });
+        };
+
+        // --- 6. RENDER HISTORY (WITH SEARCH & DATE FILTERS) ---
+        window.renderHistory = () => {
+            const searchTerm = document.getElementById('searchHistory').value.toLowerCase();
+            const dateFrom = document.getElementById('dateFrom').value;
+            const dateTo = document.getElementById('dateTo').value;
+            
+            const historyTable = document.getElementById('globalHistoryList');
+            historyTable.innerHTML = "";
+
+            let filteredBookings = allBookings.filter(b => {
+                let matchesSearch = true;
+                if(searchTerm) {
+                    matchesSearch = (b.restaurantName && b.restaurantName.toLowerCase().includes(searchTerm)) || 
+                                    (b.userName && b.userName.toLowerCase().includes(searchTerm)) ||
+                                    (b.utrNumber && b.utrNumber.toLowerCase().includes(searchTerm));
+                }
+
+                let matchesDate = true;
+                if(b.createdAt && b.createdAt.seconds) {
+                    const bDateMs = b.createdAt.seconds * 1000;
+                    if(dateFrom) { const fromMs = new Date(dateFrom).setHours(0,0,0,0); if(bDateMs < fromMs) matchesDate = false; }
+                    if(dateTo) { const toMs = new Date(dateTo).setHours(23,59,59,999); if(bDateMs > toMs) matchesDate = false; }
+                }
+                return matchesSearch && matchesDate;
+            });
+
+            filteredBookings.forEach(b => {
+                const isSuccess = (b.status === 'confirmed' || b.status === 'completed');
+                let timeStr = b.createdAt ? new Date(b.createdAt.seconds * 1000).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) : "N/A";
+                
+                let statusBadge = '';
+                if(b.status === 'pending_verification') statusBadge = `<span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-lg text-[10px] font-black uppercase">Verifying</span>`;
+                else if(b.status === 'confirmed') statusBadge = `<span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg text-[10px] font-black uppercase">Confirmed</span>`;
+                else if(b.status === 'completed') statusBadge = `<span class="bg-green-100 text-green-700 px-3 py-1 rounded-lg text-[10px] font-black uppercase">Assigned</span>`;
+                else if(b.status === 'rejected') statusBadge = `<span class="bg-red-100 text-red-700 px-3 py-1 rounded-lg text-[10px] font-black uppercase">Rejected</span>`;
+
+                historyTable.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                        <td class="p-5 pl-8 text-xs font-bold text-slate-500 whitespace-nowrap">${timeStr}</td>
+                        <td class="p-5 font-black text-slate-800">${b.restaurantName}</td>
+                        <td class="p-5"><div class="font-bold text-slate-700">${b.userName}</div><div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Ref: ${b.utrNumber || 'N/A'}</div></td>
+                        <td class="p-5 font-black text-lg ${isSuccess ? 'text-green-600' : 'text-slate-400'}">₹${b.advancePaid}</td>
+                        <td class="p-5 pr-8 text-right">${statusBadge}</td>
+                    </tr>`;
+            });
+        };
+
+        window.clearHistoryFilters = () => {
+            document.getElementById('searchHistory').value = '';
+            document.getElementById('dateFrom').value = '';
+            document.getElementById('dateTo').value = '';
+            renderHistory();
+        };
+
+        // --- 7. ADMIN ACTIONS: EDIT / DELETE / ADD PARTNER & LIVE GPS ---
+        
+        window.fetchAdminLocation = () => {
+            const btn = document.getElementById('adminLocBtn');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching GPS...';
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((pos) => {
+                    document.getElementById('mngLat').value = pos.coords.latitude;
+                    document.getElementById('mngLng').value = pos.coords.longitude;
+                    btn.innerHTML = '<i class="fas fa-check-circle"></i> GPS Location Captured';
+                    btn.className = "w-full bg-green-50 text-green-700 border border-green-200 p-4 rounded-xl font-bold transition flex items-center justify-center gap-2 shadow-sm";
+                }, () => {
+                    Swal.fire('Error', 'Please allow browser location permissions to capture live shop map data.', 'error');
+                    btn.innerHTML = '<i class="fas fa-location-arrow"></i> Fetch Current Shop Location';
+                });
+            } else {
+                Swal.fire('Error', 'Geolocation is not supported by your device.', 'error');
+            }
+        };
+
+        window.openAddPartnerModal = () => {
+            document.getElementById('managePartnerTitle').innerText = "Add New Partner";
+            document.getElementById('editPartnerId').value = "";
+            document.getElementById('mngName').value = "";
+            document.getElementById('mngPhone').value = "";
+            document.getElementById('mngUsername').value = "";
+            document.getElementById('mngPassword').value = "";
+            document.getElementById('mngAddress').value = "";
+            document.getElementById('mngUpi').value = "";
+            document.getElementById('mngLat').value = "";
+            document.getElementById('mngLng').value = "";
+            
+            // Reset GPS Button
+            const btn = document.getElementById('adminLocBtn');
+            btn.innerHTML = '<i class="fas fa-location-arrow"></i> Fetch Current Shop Location';
+            btn.className = "w-full bg-slate-900 text-white p-4 rounded-xl font-bold hover:bg-slate-800 transition flex items-center justify-center gap-2 shadow-md";
+
+            document.getElementById('modal-manage-partner').classList.remove('hidden');
+        };
+
+        window.openEditPartnerModal = (encodedData) => {
+            const r = JSON.parse(decodeURIComponent(encodedData));
+            document.getElementById('managePartnerTitle').innerText = "Edit Partner Details";
+            document.getElementById('editPartnerId').value = r.id;
+            document.getElementById('mngName').value = r.name || "";
+            document.getElementById('mngPhone').value = r.phone || "";
+            document.getElementById('mngUsername').value = r.username || "";
+            document.getElementById('mngPassword').value = r.password || "";
+            document.getElementById('mngAddress').value = r.address || "";
+            document.getElementById('mngUpi').value = r.upiId || "";
+            
+            if(r.location) {
+                document.getElementById('mngLat').value = r.location.lat;
+                document.getElementById('mngLng').value = r.location.lng;
+                const btn = document.getElementById('adminLocBtn');
+                btn.innerHTML = '<i class="fas fa-check-circle"></i> Existing GPS Saved';
+                btn.className = "w-full bg-blue-50 text-blue-700 border border-blue-200 p-4 rounded-xl font-bold transition flex items-center justify-center gap-2";
+            }
+            
+            document.getElementById('modal-manage-partner').classList.remove('hidden');
+        };
+
+        window.closeManagePartnerModal = () => document.getElementById('modal-manage-partner').classList.add('hidden');
+
+        window.saveManagedPartner = async () => {
+            const id = document.getElementById('editPartnerId').value;
+            const name = document.getElementById('mngName').value.trim();
+            const phone = document.getElementById('mngPhone').value.trim();
+            const username = document.getElementById('mngUsername').value.trim();
+            const password = document.getElementById('mngPassword').value.trim();
+            const address = document.getElementById('mngAddress').value.trim();
+            const upiId = document.getElementById('mngUpi').value.trim();
+            
+            const lat = document.getElementById('mngLat').value;
+            const lng = document.getElementById('mngLng').value;
+
+            if(!name || !username || !password) return Swal.fire('Missing Fields', 'Name, Username, and Password are required.', 'warning');
+            
+            const payload = { 
+                name, phone, username, password, address, upiId 
+            };
+
+            // Only add location if fetched
+            if(lat && lng) {
+                payload.location = { lat: parseFloat(lat), lng: parseFloat(lng) };
+            }
+
+            if(id) {
+                // EDIT EXISTING
+                await updateDoc(doc(db, "restaurants", id), payload);
+                Swal.fire({toast:true, position:'top-end', icon:'success', title:'Partner Updated', showConfirmButton:false, timer:2000});
+            } else {
+                // ADD NEW
+                payload.status = 'active'; 
+                payload.createdAt = serverTimestamp();
+                payload.logo = "https://cdn-icons-png.flaticon.com/512/3170/3170733.png";
+                await addDoc(collection(db, "restaurants"), payload);
+                Swal.fire({toast:true, position:'top-end', icon:'success', title:'Partner Added Successfully', showConfirmButton:false, timer:2000});
+            }
+            closeManagePartnerModal();
+        };
+
+        window.adminDeletePartner = async (id) => {
+            Swal.fire({
+                title: 'Delete Shop?',
+                text: "This action cannot be undone. It removes the shop from the app.",
+                icon: 'error',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Delete!',
+                confirmButtonColor: '#ef4444'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    await deleteDoc(doc(db, "restaurants", id));
+                    Swal.fire('Deleted!', 'Partner shop removed from network.', 'success');
+                }
+            });
+        };
+
+        // --- 8. OTHER EXISTING ADMIN ACTIONS ---
+        window.viewProfile = (encodedData) => {
+            const r = JSON.parse(decodeURIComponent(encodedData));
+            document.getElementById('modName').innerText = r.name;
+            document.getElementById('modPhone').innerText = r.phone || 'N/A';
+            document.getElementById('modUsername').innerText = r.username || 'Not Setup';
+            document.getElementById('modAddress').innerText = r.address || 'N/A';
+            document.getElementById('modUpi').innerText = r.upiId || 'Awaiting Setup';
+            document.getElementById('modLogo').src = r.logo || 'https://cdn-icons-png.flaticon.com/512/3170/3170733.png';
+            
+            const mapLink = document.getElementById('modMapLink');
+            if(r.location && r.location.lat) {
+                mapLink.href = `http://maps.google.com/?q=${r.location.lat},${r.location.lng}`;
+                mapLink.style.display = 'flex';
+            } else { mapLink.style.display = 'none'; }
+            
+            document.getElementById('modal-profile').classList.remove('hidden');
+        };
+        window.closeProfileModal = () => document.getElementById('modal-profile').classList.add('hidden');
+
+        window.updateRestroStatus = async (id, newStatus) => {
+            await updateDoc(doc(db, "restaurants", id), { status: newStatus });
+            Swal.fire({toast:true, position:'top-end', icon:'success', title:`Node status: ${newStatus}`, showConfirmButton:false, timer:2000});
+        };
+
+        window.settleDues = async (id, amountPaying, currentlySettled) => {
+            Swal.fire({
+                title: 'Collect Commission',
+                html: `Confirm receipt of <b class="text-orange-600 text-xl">₹${amountPaying.toFixed(2)}</b>?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Ledger Clear',
+                confirmButtonColor: '#ea580c',
+                customClass: { popup: 'rounded-3xl' }
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    await updateDoc(doc(db, "restaurants", id), { settledCommission: currentlySettled + amountPaying });
+                    Swal.fire({title:'Cleared!', text:'Ledger updated.', icon:'success', customClass:{popup:'rounded-3xl'}});
+                }
+            });
+        };
+
+        window.exportCSV = () => {
+            if(allRestaurants.length === 0) return Swal.fire('Empty', 'No data to export', 'info');
+            
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Restaurant Name,Username,Phone,Status,Total Trx,Total Advance Generated,Commission Owed\n";
+            
+            allRestaurants.forEach(r => {
+                let rBookings = allBookings.filter(b => b.restaurantId === r.id && (b.status === 'confirmed' || b.status === 'completed'));
+                let rTotalAdvance = rBookings.reduce((sum, b) => sum + Number(b.advancePaid || 0), 0);
+                let currentDues = (rTotalAdvance * sysCommissionRate) - (r.settledCommission || 0);
+                
+                let safeName = `"${(r.name || '').replace(/"/g, '""')}"`;
+                csvContent += `${safeName},${r.username || ''},${r.phone || ''},${r.status},${rBookings.length},${rTotalAdvance},${Math.max(0, currentDues).toFixed(2)}\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `FTB_MasterLedger_${new Date().toLocaleDateString()}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+    </script>
+</body>
+</html>

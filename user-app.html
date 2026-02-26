@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FTB - Food Table Book</title>
+    
+    <link rel="manifest" href="manifest_user.json">
+    <meta name="theme-color" content="#f97316"> <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@700;800;900&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f4f4f5; 
+            -webkit-tap-highlight-color: transparent;
+        }
+        h1, h2, h3, .brand-font { font-family: 'Poppins', sans-serif; }
+        
+        /* Modern Glass UI */
+        .glass-nav { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        
+        /* Smooth Animations */
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        .slide-up { animation: slideUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+        .scale-in { animation: scaleIn 0.4s ease-out forwards; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        
+        /* QR Code Styling */
+        #qrCodeContainer img { margin: auto; border-radius: 12px; padding: 12px; background: white; border: 2px solid #f97316; box-shadow: 0 4px 15px rgba(249, 115, 22, 0.2); }
+        
+        /* Hide scrollbar */
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+
+        /* Custom Gradients */
+        .bg-gradient-brand { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); }
+    </style>
+</head>
+<body class="text-slate-800 pb-24 selection:bg-orange-200">
+
+    <div id="view-home" class="fade-in">
+        <header class="glass-nav sticky top-0 z-40 px-5 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-brand text-white rounded-xl flex items-center justify-center font-black text-xl shadow-lg shadow-orange-500/30">
+                    FTB
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-[10px] font-bold text-orange-600 uppercase tracking-widest flex items-center gap-1">
+                        <i class="fas fa-map-marker-alt animate-bounce"></i> Locating you
+                    </span>
+                    <span id="userLocText" class="text-xs font-bold text-slate-800 truncate w-40 mt-0.5">Fetching GPS...</span>
+                </div>
+            </div>
+            <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-slate-600 shadow-sm border border-slate-200 cursor-pointer hover:bg-slate-50 transition">
+                <i class="fas fa-user"></i>
+            </div>
+        </header>
+
+        <main class="max-w-md mx-auto">
+            
+            <div class="px-5 pt-6 pb-2">
+                <h1 class="text-3xl text-slate-900 leading-tight tracking-tight">Skip the wait.<br><span class="text-orange-600 font-black">Book your table instantly.</span></h1>
+            </div>
+
+            <div class="px-5 py-4 sticky top-[72px] z-30 glass-nav">
+                <div class="relative shadow-sm group">
+                    <div class="absolute left-4 top-4 text-slate-400 group-focus-within:text-orange-500 transition-colors"><i class="fas fa-search text-lg"></i></div>
+                    <input type="text" id="searchInput" placeholder="Search for restaurants..." class="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-orange-500 font-medium transition shadow-sm text-slate-800 placeholder-slate-400">
+                </div>
+            </div>
+
+            <div class="px-5 py-2 flex gap-3 overflow-x-auto hide-scrollbar">
+                <span class="whitespace-nowrap bg-orange-100 text-orange-700 px-4 py-2 rounded-full text-xs font-bold border border-orange-200"><i class="fas fa-fire mr-1"></i> Trending</span>
+                <span class="whitespace-nowrap bg-white text-slate-600 px-4 py-2 rounded-full text-xs font-bold border border-slate-200 shadow-sm"><i class="fas fa-star text-yellow-500 mr-1"></i> Top Rated</span>
+                <span class="whitespace-nowrap bg-white text-slate-600 px-4 py-2 rounded-full text-xs font-bold border border-slate-200 shadow-sm"><i class="fas fa-leaf text-green-500 mr-1"></i> Pure Veg</span>
+            </div>
+
+            <div class="px-5 mt-6 mb-4 flex items-center justify-between">
+                <h2 class="text-lg font-black text-slate-800">Explore Nearby</h2>
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest"><i class="fas fa-street-view mr-1"></i>Live Data</span>
+            </div>
+
+            <div id="restaurantsContainer" class="px-5 space-y-5">
+                <div class="animate-pulse bg-white p-4 rounded-3xl border border-slate-100 flex gap-4 shadow-sm">
+                    <div class="w-24 h-24 bg-slate-200 rounded-2xl"></div>
+                    <div class="flex-1 space-y-3 py-2">
+                        <div class="h-4 bg-slate-200 rounded w-3/4"></div>
+                        <div class="h-3 bg-slate-200 rounded w-1/2"></div>
+                        <div class="h-6 bg-slate-200 rounded w-1/3 mt-2"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="view-details" class="hidden fixed inset-0 bg-slate-50 z-50 overflow-y-auto fade-in">
+        
+        <div class="relative h-64 bg-slate-900 overflow-hidden shadow-md">
+            <img id="detImage" src="" class="w-full h-full object-cover opacity-60 scale-105 transform transition duration-1000">
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent z-10"></div>
+            
+            <button onclick="closeDetails()" class="absolute top-5 left-5 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full text-white flex items-center justify-center hover:bg-white/40 transition z-20 shadow-lg border border-white/10">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            
+            <div class="absolute bottom-0 left-0 w-full p-6 z-20 slide-up">
+                <h1 id="detName" class="text-3xl font-black text-white leading-tight mb-1 drop-shadow-lg">Loading...</h1>
+                <p id="detAddress" class="text-xs text-slate-300 font-medium truncate flex items-center gap-1"><i class="fas fa-map-marker-alt"></i> <span></span></p>
+            </div>
+        </div>
+
+        <div class="p-5 max-w-md mx-auto pb-32">
+            
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 mb-8 flex justify-between items-center relative overflow-hidden scale-in">
+                <div class="absolute right-0 top-0 w-24 h-24 bg-green-50 rounded-bl-full -z-10"></div>
+                <div>
+                    <h3 class="font-black text-slate-800 text-lg mb-1">Live Seating</h3>
+                    <p class="text-xs text-slate-500 font-medium flex items-center gap-1"><span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> Updated just now</p>
+                </div>
+                <div class="text-right">
+                    <span id="detFreeTables" class="text-5xl font-black text-green-500 drop-shadow-sm">0</span>
+                    <span class="text-[10px] font-black text-slate-400 block uppercase tracking-widest mt-0.5">Free Tables</span>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-black text-slate-800 text-xl">Digital Menu</h3>
+                <span class="text-[10px] font-bold bg-slate-200 text-slate-600 px-2 py-1 rounded">₹ Prices</span>
+            </div>
+
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                <table class="w-full text-left">
+                    <tbody id="detMenuList" class="divide-y divide-slate-100 text-sm">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="fixed bottom-0 left-0 w-full glass-card border-t border-slate-200 p-4 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] z-50">
+            <div class="max-w-md mx-auto flex gap-4 items-center">
+                <div class="flex-1 pl-2">
+                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">Advance Payment</p>
+                    <p class="text-xl font-black text-slate-800">₹100 <span class="text-xs font-bold text-slate-400">/ Pax</span></p>
+                </div>
+                <button onclick="openPaymentModal()" id="btnStartBook" class="bg-gradient-brand text-white font-black px-8 py-4 rounded-2xl shadow-lg shadow-orange-600/30 hover:shadow-orange-600/50 active:scale-95 transition transform duration-200 whitespace-nowrap text-lg">
+                    Book Table
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-payment" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] hidden flex flex-col justify-end fade-in">
+        <div class="bg-white w-full max-w-md mx-auto rounded-t-[2.5rem] shadow-2xl relative overflow-hidden flex flex-col max-h-[95vh] slide-up">
+            
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center sticky top-0 bg-white/90 backdrop-blur-sm z-10">
+                <h3 class="text-2xl font-black text-slate-800">Confirm Guest</h3>
+                <button onclick="closePaymentModal()" class="w-10 h-10 bg-slate-100 text-slate-600 rounded-full flex items-center justify-center hover:bg-slate-200 transition">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+
+            <div class="p-6 overflow-y-auto">
+                <div class="space-y-4 mb-8">
+                    <input type="text" id="bName" placeholder="Guest Full Name" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none focus:border-orange-500 focus:bg-white transition text-lg">
+                    <input type="tel" id="bPhone" placeholder="Mobile Number" maxlength="10" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none focus:border-orange-500 focus:bg-white transition text-lg">
+                    
+                    <div class="flex items-center justify-between bg-orange-50 border border-orange-100 p-5 rounded-2xl">
+                        <span class="font-bold text-orange-800">Total Guests (Pax)</span>
+                        <div class="flex items-center gap-5 bg-white px-3 py-1.5 rounded-xl shadow-sm border border-orange-200">
+                            <button onclick="updatePax(-1)" class="w-8 h-8 text-orange-600 font-black text-xl hover:bg-orange-50 rounded-lg transition">-</button>
+                            <span id="bPaxDisp" class="font-black text-2xl text-slate-800 w-8 text-center">2</span>
+                            <button onclick="updatePax(1)" class="w-8 h-8 text-orange-600 font-black text-xl hover:bg-orange-50 rounded-lg transition">+</button>
+                        </div>
+                        <input type="hidden" id="bPaxVal" value="2">
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 rounded-3xl p-6 text-center shadow-xl relative overflow-hidden mb-6 border border-slate-800">
+                    <div class="absolute top-0 right-0 w-40 h-40 bg-orange-500/20 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
+                    
+                    <h4 class="text-white font-black text-xl mb-1 relative z-10">Scan to Pay Advance</h4>
+                    <p class="text-slate-400 text-[10px] font-bold mb-5 uppercase tracking-widest relative z-10">Direct to Restaurant UPI</p>
+                    
+                    <div class="bg-white p-3 rounded-2xl inline-block shadow-inner mb-5 relative z-10">
+                        <div id="qrCodeContainer" class="w-40 h-40 mx-auto flex items-center justify-center bg-slate-50 rounded-xl">
+                            <i class="fas fa-qrcode text-5xl text-slate-300"></i>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col items-center justify-center relative z-10">
+                        <span class="text-slate-400 font-bold text-sm mb-1">Amount to Pay</span>
+                        <span class="text-5xl font-black text-green-400 tracking-tighter">₹<span id="bTotalVal">200</span></span>
+                    </div>
+                </div>
+
+                <div class="bg-green-50 rounded-3xl p-6 border border-green-200">
+                    <label class="text-xs font-black text-green-800 uppercase tracking-widest block mb-3 flex items-center justify-center gap-2">
+                        <i class="fas fa-shield-check text-lg"></i> Payment Verification
+                    </label>
+                    <input type="text" id="bUtr" placeholder="Enter 12-digit UTR No." maxlength="12" class="w-full p-4 bg-white border border-green-300 rounded-2xl font-black outline-none focus:border-green-600 text-green-900 placeholder-green-300 text-center tracking-widest text-lg mb-4 shadow-sm">
+                    
+                    <button onclick="finalizeBooking()" id="btnFinalize" class="w-full bg-green-600 hover:bg-green-700 text-white font-black py-4 rounded-2xl shadow-lg shadow-green-600/30 transition active:scale-95 text-lg flex items-center justify-center gap-2">
+                        Verify & Confirm
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="activeTicket" class="hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[92%] max-w-sm p-4 rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.2)] flex items-center justify-between cursor-pointer border slide-up z-40 transition-colors duration-500" onclick="showTicket()">
+        <div class="flex items-center gap-4 w-full pl-1">
+            <div id="ticketIcon" class="w-12 h-12 rounded-full flex items-center justify-center text-xl flex-shrink-0 border-2">
+                <i class="fas fa-spinner"></i>
+            </div>
+            <div class="flex-1 min-w-0 py-1">
+                <p id="ticketStatusText" class="text-[10px] font-black uppercase tracking-widest mb-0.5 truncate drop-shadow-sm">Checking...</p>
+                <p class="font-black text-base text-white truncate drop-shadow-sm" id="ticketRestroName">Loading...</p>
+            </div>
+            <div class="w-10 h-10 rounded-full bg-black/10 flex items-center justify-center text-white/70">
+                <i class="fas fa-chevron-up"></i>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs, addDoc, doc, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAVZfBaUEQxszbuDXsoFJ6uW2_5XqBulRE",
+            authDomain: "waiting-9617c.firebaseapp.com",
+            projectId: "waiting-9617c",
+            storageBucket: "waiting-9617c.firebasestorage.app",
+            messagingSenderId: "698708284819",
+            appId: "1:698708284819:web:3732cf42140cba84494466"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Global Variables
+        let userLat = 0, userLng = 0;
+        let selectedRestro = null;
+        let menuListener = null, tablesListener = null, ticketListener = null;
+
+        // --- 1. INITIALIZE & GPS ---
+        function initApp() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((pos) => {
+                    userLat = pos.coords.latitude; userLng = pos.coords.longitude;
+                    document.getElementById('userLocText').innerText = "Location Synced";
+                    document.getElementById('userLocText').parentElement.querySelector('i').classList.replace('animate-bounce', 'text-green-500');
+                    fetchRestaurants();
+                }, () => {
+                    document.getElementById('userLocText').innerText = "Location access denied";
+                    fetchRestaurants(); 
+                });
+            } else { fetchRestaurants(); }
+            checkAndListenActiveTicket();
+        }
+
+        // --- 2. FETCH APPROVED RESTAURANTS ---
+        async function fetchRestaurants() {
+            const container = document.getElementById('restaurantsContainer');
+            const q = query(collection(db, "restaurants"), where("status", "==", "active"));
+            const snap = await getDocs(q);
+            
+            container.innerHTML = "";
+            let restroList = [];
+
+            snap.forEach(doc => {
+                let d = doc.data(); d.id = doc.id;
+                d.distance = (userLat !== 0 && d.location) ? getDistanceFromLatLonInKm(userLat, userLng, d.location.lat, d.location.lng) : 0;
+                restroList.push(d);
+            });
+
+            restroList.sort((a, b) => a.distance - b.distance);
+
+            if(restroList.length === 0) {
+                container.innerHTML = `<div class="text-center p-10"><i class="fas fa-store-slash text-6xl text-slate-200 mb-4 block"></i><p class="text-slate-400 font-bold">No partner restaurants active nearby.</p></div>`;
+                return;
+            }
+
+            restroList.forEach((r, idx) => {
+                let distHtml = r.distance > 0 ? `<span class="text-[10px] font-black bg-slate-100 text-slate-500 px-2 py-1.5 rounded-lg uppercase border border-slate-200"><i class="fas fa-location-arrow text-orange-500 mr-1"></i>${r.distance} km</span>` : '';
+                const rData = encodeURIComponent(JSON.stringify(r));
+                
+                // Staggered animation effect
+                let delay = idx * 100;
+
+                container.innerHTML += `
+                    <div onclick="openDetails('${rData}')" style="animation-delay: ${delay}ms" class="fade-in bg-white p-4 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-lg hover:border-orange-300 transition-all cursor-pointer group">
+                        <div class="w-24 h-24 rounded-2xl bg-slate-50 overflow-hidden flex-shrink-0 border border-slate-200 shadow-inner relative">
+                            <img src="${r.logo}" class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
+                            <div class="absolute inset-0 bg-black/10 group-hover:bg-transparent transition"></div>
+                        </div>
+                        <div class="flex-1 min-w-0 py-1">
+                            <h3 class="font-black text-slate-800 text-lg leading-tight mb-1 truncate group-hover:text-orange-600 transition">${r.name}</h3>
+                            <p class="text-xs text-slate-500 truncate mb-3 font-medium">${r.address}</p>
+                            <div class="flex items-center justify-between">
+                                ${distHtml}
+                                <div class="w-8 h-8 rounded-full bg-orange-50 text-orange-600 flex items-center justify-center font-bold group-hover:bg-gradient-brand group-hover:text-white transition shadow-sm"><i class="fas fa-chevron-right text-sm"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // --- 3. RESTAURANT DETAILS (TABLES & MENU) ---
+        window.openDetails = (encodedData) => {
+            selectedRestro = JSON.parse(decodeURIComponent(encodedData));
+            
+            document.getElementById('detName').innerText = selectedRestro.name;
+            document.querySelector('#detAddress span').innerText = selectedRestro.address;
+            document.getElementById('detImage').src = selectedRestro.logo;
+            
+            document.getElementById('view-home').classList.add('hidden');
+            document.getElementById('view-details').classList.remove('hidden');
+
+            // 3A. Fetch Free Tables (Live)
+            if(tablesListener) tablesListener(); 
+            tablesListener = onSnapshot(collection(db, "restaurants", selectedRestro.id, "tables"), (snap) => {
+                let free = 0;
+                snap.forEach(d => { if(d.data().status === 'free') free++; });
+                document.getElementById('detFreeTables').innerText = free;
+                
+                const btn = document.getElementById('btnStartBook');
+                if(free === 0) {
+                    btn.innerText = "House Full (No Tables)"; 
+                    btn.disabled = true; 
+                    btn.classList.replace('bg-gradient-brand', 'bg-slate-400');
+                    btn.classList.replace('shadow-orange-600/30', 'shadow-none');
+                } else {
+                    btn.innerText = "Book Table Now"; 
+                    btn.disabled = false; 
+                    btn.classList.replace('bg-slate-400', 'bg-gradient-brand');
+                    btn.classList.add('shadow-orange-600/30');
+                }
+            });
+
+            // 3B. Fetch Menu (Live)
+            if(menuListener) menuListener(); 
+            menuListener = onSnapshot(collection(db, "restaurants", selectedRestro.id, "menu"), (snap) => {
+                const tbody = document.getElementById('detMenuList');
+                tbody.innerHTML = "";
+                if(snap.empty) { tbody.innerHTML = `<tr><td class="p-8 text-center text-slate-400 font-bold text-sm"><i class="fas fa-folder-open block text-3xl mb-2 opacity-50"></i> Menu updating soon...</td></tr>`; return; }
+                
+                snap.forEach(d => {
+                    const m = d.data();
+                    const dotClass = m.type === 'veg' ? 'text-green-500 border-green-200 bg-green-50' : 'text-red-500 border-red-200 bg-red-50';
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-orange-50/50 transition border-b border-slate-50 last:border-0">
+                            <td class="p-4 py-5 w-12 text-center"><div class="w-4 h-4 rounded-sm border ${dotClass} flex items-center justify-center mx-auto"><i class="fas fa-circle text-[8px]"></i></div></td>
+                            <td class="p-4 py-5">
+                                <div class="font-black text-slate-800 text-base mb-0.5">${m.name}</div>
+                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">${m.category || 'Item'}</div>
+                            </td>
+                            <td class="p-4 py-5 font-black text-slate-800 text-right text-lg">₹${m.price}</td>
+                        </tr>
+                    `;
+                });
+            });
+        };
+
+        window.closeDetails = () => {
+            document.getElementById('view-details').classList.add('hidden');
+            document.getElementById('view-home').classList.remove('hidden');
+            if(tablesListener) tablesListener();
+            if(menuListener) menuListener();
+        };
+
+        // --- 4. PAYMENT MODAL & DYNAMIC QR ---
+        window.openPaymentModal = () => {
+            document.getElementById('modal-payment').classList.remove('hidden');
+            updatePax(0); 
+            generateUPIQR();
+        };
+        window.closePaymentModal = () => { document.getElementById('modal-payment').classList.add('hidden'); };
+
+        window.updatePax = (val) => {
+            let newVal = parseInt(document.getElementById('bPaxVal').value) + val;
+            if(newVal < 1) newVal = 1; if(newVal > 20) newVal = 20;
+            
+            document.getElementById('bPaxVal').value = newVal;
+            document.getElementById('bPaxDisp').innerText = newVal;
+            document.getElementById('bTotalVal').innerText = newVal * 100;
+            generateUPIQR();
+        };
+
+        function generateUPIQR() {
+            const amount = document.getElementById('bPaxVal').value * 100;
+            const upiId = selectedRestro.upiId || "default@upi";
+            const name = encodeURIComponent(selectedRestro.name);
+            const upiString = `upi://pay?pa=${upiId}&pn=${name}&am=${amount}&cu=INR&tn=FTB_Booking`;
+
+            document.getElementById('qrCodeContainer').innerHTML = ""; 
+            new QRCode(document.getElementById("qrCodeContainer"), {
+                text: upiString,
+                width: 150,
+                height: 150,
+                colorDark : "#0f172a",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+        }
+
+        // --- 5. SUBMIT BOOKING (UTR) ---
+        window.finalizeBooking = async () => {
+            const name = document.getElementById('bName').value.trim();
+            const phone = document.getElementById('bPhone').value.trim();
+            const utr = document.getElementById('bUtr').value.trim();
+            const pax = parseInt(document.getElementById('bPaxVal').value);
+            const total = pax * 100;
+
+            if(!name || phone.length < 10) return Swal.fire('Missing Details', 'Enter valid name and 10-digit phone number.', 'warning');
+            if(utr.length < 6) return Swal.fire('UTR Required', 'Please complete payment using the QR and enter the Reference/UTR Number.', 'error');
+
+            const btn = document.getElementById('btnFinalize');
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Securing Table...';
+            btn.disabled = true;
+
+            try {
+                const docRef = await addDoc(collection(db, "chain_bookings"), {
+                    restaurantId: selectedRestro.id,
+                    restaurantName: selectedRestro.name,
+                    userName: name,
+                    userPhone: phone,
+                    pax: pax,
+                    advancePaid: total,
+                    utrNumber: utr,
+                    status: 'pending_verification',
+                    createdAt: serverTimestamp()
+                });
+
+                localStorage.setItem('chain_ticket_id', docRef.id);
+                localStorage.setItem('chain_ticket_name', selectedRestro.name);
+                
+                Swal.fire({
+                    title: 'Verifying!',
+                    text: 'The restaurant is checking your payment. Your ticket will turn green once approved.',
+                    icon: 'success',
+                    confirmButtonColor: '#f97316'
+                });
+                
+                closePaymentModal();
+                closeDetails();
+                checkAndListenActiveTicket();
+
+            } catch(e) {
+                Swal.fire('Network Error', 'Failed to connect. Please try again.', 'error');
+            }
+            btn.innerHTML = 'Verify & Confirm';
+            btn.disabled = false;
+        };
+
+        // --- 6. LIVE TICKET & TABLE ASSIGNMENT MAGIC ---
+        function checkAndListenActiveTicket() {
+            const tId = localStorage.getItem('chain_ticket_id');
+            if(!tId) return;
+
+            const ticketUI = document.getElementById('activeTicket');
+            ticketUI.classList.remove('hidden');
+            
+            if(ticketListener) ticketListener();
+            
+            ticketListener = onSnapshot(doc(db, "chain_bookings", tId), (docSnap) => {
+                if(docSnap.exists()){
+                    const b = docSnap.data();
+                    document.getElementById('ticketRestroName').innerText = b.restaurantName;
+                    
+                    const icon = document.getElementById('ticketIcon');
+                    const text = document.getElementById('ticketStatusText');
+
+                    // STATE 1: PENDING (Yellow/Amber)
+                    if(b.status === 'pending_verification') {
+                        ticketUI.className = "hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[92%] max-w-sm p-4 rounded-3xl shadow-[0_15px_40px_rgba(0,0,0,0.3)] flex items-center justify-between cursor-pointer border slide-up z-40 transition-all duration-500 bg-slate-900 text-white border-amber-500/30";
+                        icon.className = "w-12 h-12 rounded-full flex items-center justify-center border-2 text-amber-400 border-amber-400/50 bg-amber-400/10 animate-pulse text-xl flex-shrink-0";
+                        icon.innerHTML = '<i class="fas fa-hourglass-half"></i>';
+                        text.innerText = "Verifying Payment...";
+                        text.className = "text-[10px] font-black uppercase tracking-widest mb-0.5 truncate text-amber-400";
+                    } 
+                    // STATE 2: CONFIRMED BY PARTNER (Green)
+                    else if (b.status === 'confirmed') {
+                        ticketUI.className = "hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[92%] max-w-sm p-4 rounded-3xl shadow-[0_15px_40px_rgba(22,163,74,0.3)] flex items-center justify-between cursor-pointer border slide-up z-40 transition-all duration-500 bg-green-600 text-white border-green-500";
+                        icon.className = "w-12 h-12 rounded-full flex items-center justify-center border-2 text-white border-white/50 bg-white/20 text-xl flex-shrink-0";
+                        icon.innerHTML = '<i class="fas fa-check-double"></i>';
+                        text.innerText = "Table Confirmed!";
+                        text.className = "text-[10px] font-black uppercase tracking-widest mb-0.5 truncate text-green-200";
+                        
+                        Swal.fire({toast:true, position:'top-end', icon:'success', title:'Payment Verified & Table Confirmed!', showConfirmButton:false, timer:4000});
+                    }
+                    // STATE 3: TABLE ASSIGNED (The Magic Popup)
+                    else if (b.status === 'completed') {
+                        ticketUI.classList.add('hidden');
+                        localStorage.removeItem('chain_ticket_id');
+                        localStorage.removeItem('chain_ticket_name');
+                        
+                        let tableInfo = b.assignedTableName ? `<div class="text-6xl font-black text-orange-600 mt-6 mb-4 py-6 bg-orange-50 rounded-[2rem] border border-orange-200 tracking-tighter shadow-inner">${b.assignedTableName}</div>` : '';
+                        
+                        Swal.fire({
+                            title: 'Welcome!',
+                            html: `Please proceed to your assigned table inside the restaurant: <br> ${tableInfo}`,
+                            icon: 'success',
+                            confirmButtonText: 'Enjoy Your Meal',
+                            confirmButtonColor: '#ea580c',
+                            allowOutsideClick: false,
+                            customClass: { popup: 'rounded-3xl p-6' }
+                        });
+                        
+                        if(ticketListener) ticketListener();
+                    }
+                    // STATE 4: REJECTED
+                    else if (b.status === 'rejected') {
+                        ticketUI.classList.add('hidden');
+                        localStorage.removeItem('chain_ticket_id');
+                        localStorage.removeItem('chain_ticket_name');
+                        Swal.fire('Payment Rejected', 'Restaurant could not verify your UTR. Please contact them at the counter.', 'error');
+                        if(ticketListener) ticketListener();
+                    }
+                }
+            });
+        }
+
+        window.showTicket = () => {
+            const rName = localStorage.getItem('chain_ticket_name');
+            Swal.fire({
+                title: 'Booking Active',
+                html: `<div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 mt-2 text-left">
+                        <p class="font-black text-slate-800 text-xl mb-1">${rName}</p>
+                        <p class="text-xs font-bold text-slate-500">Please wait for the restaurant to assign you a table, or show this screen at the reception.</p>
+                       </div>`,
+                confirmButtonText: 'Close',
+                confirmButtonColor: '#0f172a',
+                customClass: { popup: 'rounded-3xl' }
+            });
+        };
+
+        // Utility: Haversine Distance
+        function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+            var R = 6371; var dLat = (lat2-lat1)*(Math.PI/180); var dLon = (lon2-lon1)*(Math.PI/180);
+            var a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*(Math.PI/180))*Math.cos(lat2*(Math.PI/180))*Math.sin(dLon/2)*Math.sin(dLon/2);
+            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return (R * c).toFixed(1);
+        }
+
+        initApp();
+    </script>
+</body>
+</html>

@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Partner Dashboard | FTB Network</title>
+    
+    <link rel="manifest" href="manifest_partner.json">
+    <meta name="theme-color" content="#f97316">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@700;800;900&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f4f4f5; -webkit-tap-highlight-color: transparent; }
+        h1, h2, h3, .brand-font { font-family: 'Poppins', sans-serif; }
+        
+        /* Modern Glass UI */
+        .glass-panel { background: rgba(255, 255, 255, 0.90); backdrop-filter: blur(15px); }
+        .bg-gradient-brand { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); }
+        
+        /* Smooth Animations */
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        .slide-up { animation: slideUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body class="text-slate-800 flex h-screen overflow-hidden selection:bg-orange-200">
+
+    <div id="screen-login" class="fixed inset-0 z-[100] flex flex-col items-center justify-center p-5 fade-in bg-[url('https://www.transparenttextures.com/patterns/food.png')] bg-slate-900">
+        <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm z-0"></div>
+        
+        <div class="glass-panel p-8 md:p-10 rounded-[2.5rem] shadow-2xl w-full max-w-sm text-center border border-white/20 relative z-10 slide-up">
+            <div class="w-24 h-24 bg-gradient-brand text-white rounded-3xl flex items-center justify-center mx-auto mb-6 text-4xl shadow-lg shadow-orange-500/40 transform rotate-3 hover:rotate-0 transition duration-300">
+                <i class="fas fa-store"></i>
+            </div>
+            <h2 class="text-3xl font-black mb-1 text-slate-800 tracking-tight">FTB Partner</h2>
+            <p class="text-slate-500 text-sm font-semibold mb-8">Manage your restaurant business</p>
+            
+            <div class="relative mb-6">
+                <div class="absolute inset-y-0 left-5 flex items-center text-orange-500"><i class="fas fa-mobile-alt text-lg"></i></div>
+                <input type="tel" id="loginPhone" placeholder="Mobile Number" maxlength="10" class="w-full pl-14 pr-4 py-4 bg-white/80 border border-slate-200 rounded-2xl font-bold outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 text-lg shadow-inner transition tracking-wider">
+            </div>
+            
+            <button onclick="checkPartner()" class="w-full bg-slate-900 text-white font-black py-4 rounded-2xl hover:bg-slate-800 transition shadow-xl active:scale-95 text-lg">
+                Login / Register <i class="fas fa-arrow-right ml-2"></i>
+            </button>
+        </div>
+    </div>
+
+    <div id="screen-register" class="fixed inset-0 bg-slate-50 z-[90] hidden overflow-y-auto p-4 md:p-8 fade-in">
+        <div class="max-w-2xl mx-auto bg-white p-8 rounded-[2rem] shadow-xl border border-slate-100 mt-4 mb-10 slide-up">
+            <div class="flex items-center gap-4 mb-8 border-b border-slate-100 pb-6">
+                <div class="w-14 h-14 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center text-2xl"><i class="fas fa-rocket"></i></div>
+                <div>
+                    <h2 class="text-2xl font-black text-slate-800">Setup Restaurant</h2>
+                    <p class="text-slate-500 font-medium text-sm">Join the FTB zero-commission network.</p>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2 md:col-span-2">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Restaurant Name</label>
+                    <input type="text" id="regName" placeholder="e.g. Ram Kishan's Sweets" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none focus:border-orange-500 focus:bg-white transition">
+                </div>
+                
+                <div class="space-y-2 md:col-span-2">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Complete Address</label>
+                    <input type="text" id="regAddress" placeholder="Full exact address" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none focus:border-orange-500 focus:bg-white transition">
+                </div>
+
+                <div class="space-y-2 md:col-span-2 p-6 bg-green-50 rounded-3xl border border-green-200 relative overflow-hidden">
+                    <i class="fas fa-qrcode absolute -right-6 -bottom-6 text-7xl text-green-500/10 pointer-events-none"></i>
+                    <label class="text-xs font-black text-green-800 uppercase tracking-widest flex items-center gap-2 relative z-10"><i class="fas fa-wallet"></i> Receiving UPI ID</label>
+                    <input type="text" id="regUpi" placeholder="e.g. 9876543210@paytm" class="w-full p-4 bg-white border border-green-300 rounded-2xl font-black outline-none focus:border-green-600 text-green-900 mt-2 relative z-10 shadow-sm">
+                    <p class="text-[10px] font-bold text-green-700 mt-2 relative z-10">All customer advance payments will go directly to this UPI.</p>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Live Map Location</label>
+                    <button onclick="getLocation()" id="locBtn" class="w-full bg-slate-100 text-slate-700 border border-slate-200 p-4 rounded-2xl font-bold hover:bg-slate-200 transition flex justify-center items-center gap-2 shadow-sm">
+                        <i class="fas fa-location-arrow"></i> <span>Fetch GPS Status</span>
+                    </button>
+                    <input type="hidden" id="regLat"><input type="hidden" id="regLng">
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Brand Logo</label>
+                    <input type="file" id="regLogo" accept="image/*" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-orange-100 file:text-orange-700">
+                </div>
+            </div>
+
+            <button onclick="submitRegistration()" id="btnSubmitReg" class="w-full mt-8 bg-gradient-brand text-white font-black py-4 rounded-2xl shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 active:scale-95 transition text-lg">
+                Create Partner Account
+            </button>
+        </div>
+    </div>
+
+    <div id="mainApp" class="flex w-full hidden">
+        
+        <aside id="sidebar" class="w-72 bg-slate-900 text-white flex flex-col fixed md:relative h-full z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 shadow-2xl">
+            <div class="h-24 flex items-center px-6 border-b border-slate-800 bg-slate-950 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
+                <div class="w-12 h-12 bg-gradient-brand rounded-2xl flex items-center justify-center font-bold shadow-lg mr-4 text-xl relative z-10"><i class="fas fa-store"></i></div>
+                <div class="min-w-0 relative z-10">
+                    <h1 class="font-black text-white truncate text-lg" id="sidebarRestroName">My Restro</h1>
+                    <span class="text-[10px] font-black text-orange-400 uppercase tracking-widest">FTB Partner</span>
+                </div>
+                <button onclick="toggleSidebar()" class="ml-auto md:hidden text-slate-400 relative z-10"><i class="fas fa-times text-xl"></i></button>
+            </div>
+
+            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+                <button onclick="nav('bookings')" id="nav-bookings" class="nav-btn w-full flex items-center px-5 py-4 rounded-2xl font-bold transition bg-orange-500/20 text-orange-400">
+                    <i class="fas fa-bell w-8 text-lg"></i> Live Bookings
+                </button>
+                <button onclick="nav('tables')" id="nav-tables" class="nav-btn w-full flex items-center px-5 py-4 text-slate-400 hover:bg-slate-800 hover:text-white rounded-2xl font-bold transition">
+                    <i class="fas fa-chair w-8 text-lg"></i> Manage Tables
+                </button>
+                <button onclick="nav('menu')" id="nav-menu" class="nav-btn w-full flex items-center px-5 py-4 text-slate-400 hover:bg-slate-800 hover:text-white rounded-2xl font-bold transition">
+                    <i class="fas fa-book-open w-8 text-lg"></i> Menu Editor
+                </button>
+                <button onclick="nav('settings')" id="nav-settings" class="nav-btn w-full flex items-center px-5 py-4 text-slate-400 hover:bg-slate-800 hover:text-white rounded-2xl font-bold transition">
+                    <i class="fas fa-cog w-8 text-lg"></i> Settings & UPI
+                </button>
+            </nav>
+
+            <div class="p-5 border-t border-slate-800">
+                <button onclick="logout()" class="w-full flex items-center justify-center px-4 py-3 bg-slate-800 text-red-400 hover:bg-red-500/20 hover:text-red-300 rounded-xl font-bold transition">
+                    <i class="fas fa-power-off mr-2"></i> Sign Out
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col min-w-0 bg-slate-50/50">
+            <header class="h-20 glass-panel border-b border-slate-200 flex items-center justify-between px-5 md:px-8 sticky top-0 z-30">
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleSidebar()" class="md:hidden text-slate-600"><i class="fas fa-bars text-xl"></i></button>
+                    <h2 id="pageTitle" class="text-2xl font-black text-slate-800 tracking-tight">Live Bookings</h2>
+                </div>
+                <div id="statusBadge" class="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-green-600 bg-green-100 px-3 py-1.5 rounded-lg border border-green-200 hidden">
+                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> Online
+                </div>
+            </header>
+
+            <div class="flex-1 overflow-y-auto p-4 md:p-8 relative">
+                
+                <div id="pendingAlert" class="hidden mb-6 bg-amber-50 border border-amber-200 p-5 rounded-2xl flex items-start gap-4 shadow-sm slide-up">
+                    <i class="fas fa-shield-alt text-amber-500 text-2xl mt-0.5"></i>
+                    <div>
+                        <h3 class="font-black text-amber-800 text-lg">Account Verification Pending</h3>
+                        <p class="text-sm text-amber-700 mt-1 font-medium">Your profile is under review by Super Admin. You will be visible to users once approved.</p>
+                    </div>
+                </div>
+
+                <div id="view-bookings" class="fade-in">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm relative overflow-hidden">
+                            <i class="fas fa-users absolute -right-3 -bottom-3 text-6xl text-slate-50"></i>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 relative z-10">Active Bookings</p>
+                            <h3 class="text-4xl font-black text-slate-800 relative z-10" id="statBookings">0</h3>
+                        </div>
+                        <div class="bg-gradient-brand p-6 rounded-3xl shadow-lg shadow-orange-500/20 text-white relative overflow-hidden">
+                            <i class="fas fa-wallet absolute -right-3 -bottom-3 text-6xl text-white/10"></i>
+                            <p class="text-[10px] text-orange-100 font-bold uppercase tracking-widest mb-1 relative z-10">Advance Verified</p>
+                            <h3 class="text-4xl font-black relative z-10">₹<span id="statAdvance">0</span></h3>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between mb-4 px-2">
+                        <h3 class="font-black text-slate-800 text-lg">Incoming Guests Feed</h3>
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest animate-pulse"><i class="fas fa-sync-alt"></i> Auto Syncing</span>
+                    </div>
+
+                    <div class="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead class="bg-slate-50/50 text-slate-400 text-[10px] uppercase font-black tracking-widest border-b border-slate-100">
+                                    <tr>
+                                        <th class="p-5">Guest Details</th>
+                                        <th class="p-5">Pax</th>
+                                        <th class="p-5">Payment Verification</th>
+                                        <th class="p-5 text-right">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bookingsList" class="divide-y divide-slate-50 text-sm">
+                                    </tbody>
+                            </table>
+                        </div>
+                        <div id="noBookingsMsg" class="p-16 text-center hidden">
+                            <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100"><i class="fas fa-mug-hot text-4xl text-slate-300"></i></div>
+                            <p class="text-slate-400 font-bold text-lg">No active bookings right now.</p>
+                            <p class="text-slate-400 text-xs mt-1">Keep this screen open to receive live updates.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-tables" class="hidden fade-in space-y-8">
+                    <div class="bg-white p-6 md:p-8 rounded-[2rem] shadow-sm border border-slate-100">
+                        <h3 class="font-black text-slate-800 mb-5 text-lg"><i class="fas fa-plus-circle text-orange-500 mr-2"></i>Create New Table</h3>
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <input type="text" id="tName" placeholder="Table Name (e.g. T-01)" class="flex-1 p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none focus:border-orange-500 focus:bg-white transition text-lg">
+                            <input type="number" id="tCap" placeholder="Seating Capacity (Pax)" class="flex-1 p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none focus:border-orange-500 focus:bg-white transition text-lg">
+                            <button onclick="addTable()" class="bg-slate-900 text-white font-black px-8 py-4 rounded-2xl hover:bg-slate-800 transition active:scale-95 shadow-lg text-lg">Save Table</button>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="font-black text-slate-800 text-xl mb-4 px-2">Live Table Status</h3>
+                        <div id="tablesGrid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-5">
+                            </div>
+                    </div>
+                </div>
+
+                <div id="view-menu" class="hidden fade-in space-y-6">
+                    <div class="bg-white p-6 md:p-8 rounded-[2rem] shadow-sm border border-slate-100">
+                        <h3 class="font-black text-slate-800 mb-5 text-lg"><i class="fas fa-hamburger text-orange-500 mr-2"></i>Add Menu Item</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
+                            <input type="text" id="mName" placeholder="Dish Name" class="md:col-span-2 p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none focus:border-orange-500 transition">
+                            <input type="text" id="mCat" placeholder="Category" class="md:col-span-1 p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none focus:border-orange-500 transition">
+                            <select id="mType" class="p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none focus:border-orange-500 transition cursor-pointer text-slate-600">
+                                <option value="veg">🟢 Veg</option>
+                                <option value="nonveg">🔴 Non-Veg</option>
+                            </select>
+                            <input type="number" id="mPrice" placeholder="Price ₹" class="p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none focus:border-orange-500 transition">
+                            <button onclick="addMenuItem()" class="bg-gradient-brand text-white font-black rounded-2xl hover:shadow-lg hover:shadow-orange-500/30 transition active:scale-95">Add</button>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50 text-slate-400 text-[10px] uppercase font-black tracking-widest border-b border-slate-100">
+                                <tr>
+                                    <th class="p-5">Menu Item</th>
+                                    <th class="p-5 text-center">Price</th>
+                                    <th class="p-5 text-right">Remove</th>
+                                </tr>
+                            </thead>
+                            <tbody id="menuList" class="divide-y divide-slate-50 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="view-settings" class="hidden fade-in max-w-2xl">
+                    <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
+                        <h3 class="text-2xl font-black text-slate-800 mb-8 flex items-center gap-3"><i class="fas fa-user-cog text-orange-500"></i> Business Setup</h3>
+                        
+                        <div class="space-y-6">
+                            <div class="p-1">
+                                <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">Display Name</label>
+                                <input type="text" id="setRestroName" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none focus:border-orange-500 focus:bg-white text-lg transition">
+                            </div>
+
+                            <div class="bg-green-50 border border-green-200 p-6 rounded-3xl relative overflow-hidden">
+                                <i class="fas fa-qrcode absolute -right-5 -bottom-5 text-7xl text-green-500/10"></i>
+                                <label class="text-xs font-black text-green-800 uppercase tracking-widest block mb-3 flex items-center gap-2 relative z-10"><i class="fas fa-wallet"></i> Receiving UPI ID</label>
+                                <input type="text" id="setUpi" class="w-full p-4 bg-white border border-green-300 rounded-2xl font-black outline-none focus:border-green-600 text-green-900 shadow-sm text-lg relative z-10 transition">
+                                <p class="text-[10px] font-bold text-green-600 mt-2 relative z-10">Scan to pay works exactly with this UPI.</p>
+                                
+                                <div class="mt-6 flex gap-3 relative z-10">
+                                    <button onclick="updateProfile()" class="flex-1 bg-green-600 text-white font-black py-4 rounded-2xl hover:bg-green-700 transition shadow-lg shadow-green-600/20 active:scale-95 text-lg">
+                                        Save Changes
+                                    </button>
+                                    <button onclick="clearUpi()" class="bg-white text-red-500 border border-red-200 font-bold px-5 rounded-2xl hover:bg-red-50 transition active:scale-95" title="Clear UPI">
+                                        <i class="fas fa-trash text-lg"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+        import { getFirestore, collection, doc, query, where, getDocs, onSnapshot, addDoc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-storage.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAVZfBaUEQxszbuDXsoFJ6uW2_5XqBulRE",
+            authDomain: "waiting-9617c.firebaseapp.com",
+            projectId: "waiting-9617c",
+            storageBucket: "waiting-9617c.firebasestorage.app",
+            messagingSenderId: "698708284819",
+            appId: "1:698708284819:web:3732cf42140cba84494466"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        let myRestroId = localStorage.getItem('partner_v3_id');
+        let currentPhone = localStorage.getItem('partner_v3_phone');
+
+        // --- 1. LOGIN & ONBOARDING ---
+        if(myRestroId) startDashboard(myRestroId);
+
+        window.checkPartner = async () => {
+            const phone = document.getElementById('loginPhone').value.trim();
+            if(phone.length < 10) return Swal.fire('Wait', 'Enter valid 10-digit number', 'warning');
+            
+            Swal.fire({title: 'Authenticating...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+            
+            const snap = await getDocs(query(collection(db, "restaurants"), where("phone", "==", phone)));
+            Swal.close();
+
+            if(snap.empty) { 
+                currentPhone = phone;
+                document.getElementById('screen-login').classList.add('hidden');
+                document.getElementById('screen-register').classList.remove('hidden');
+            } else {
+                myRestroId = snap.docs[0].id;
+                localStorage.setItem('partner_v3_id', myRestroId);
+                localStorage.setItem('partner_v3_phone', phone);
+                startDashboard(myRestroId);
+            }
+        };
+
+        window.getLocation = () => {
+            if (navigator.geolocation) {
+                const btn = document.getElementById('locBtn');
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching...';
+                navigator.geolocation.getCurrentPosition((pos) => {
+                    document.getElementById('regLat').value = pos.coords.latitude;
+                    document.getElementById('regLng').value = pos.coords.longitude;
+                    btn.innerHTML = '<i class="fas fa-check-circle"></i> GPS Saved';
+                    btn.classList.replace('text-slate-700', 'text-green-700');
+                    btn.classList.replace('bg-slate-100', 'bg-green-50');
+                    btn.classList.replace('border-slate-200', 'border-green-200');
+                }, () => Swal.fire('Error', 'Please allow GPS location access.', 'error'));
+            }
+        };
+
+        window.submitRegistration = async () => {
+            const name = document.getElementById('regName').value;
+            const address = document.getElementById('regAddress').value;
+            const upiId = document.getElementById('regUpi').value;
+            const lat = document.getElementById('regLat').value;
+            const lng = document.getElementById('regLng').value;
+            const logoFile = document.getElementById('regLogo').files[0];
+
+            if(!name || !address || !upiId || !lat) return Swal.fire('Incomplete Details', 'Fill all fields including GPS & UPI.', 'warning');
+
+            const btn = document.getElementById('btnSubmitReg');
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Setting up Profile...'; btn.disabled = true;
+
+            try {
+                let logoUrl = "https://cdn-icons-png.flaticon.com/512/3170/3170733.png";
+                if(logoFile) {
+                    const storageRef = ref(storage, `logos/${Date.now()}_${logoFile.name}`);
+                    await uploadBytes(storageRef, logoFile);
+                    logoUrl = await getDownloadURL(storageRef);
+                }
+
+                const docRef = await addDoc(collection(db, "restaurants"), {
+                    phone: currentPhone, name: name, address: address, upiId: upiId,
+                    location: { lat: parseFloat(lat), lng: parseFloat(lng) },
+                    logo: logoUrl, status: 'pending', createdAt: serverTimestamp()
+                });
+
+                myRestroId = docRef.id;
+                localStorage.setItem('partner_v3_id', myRestroId);
+                localStorage.setItem('partner_v3_phone', currentPhone);
+                startDashboard(myRestroId);
+
+            } catch(e) { Swal.fire('Error', 'Failed to register', 'error'); btn.innerHTML = 'Create Partner Account'; btn.disabled = false; }
+        };
+
+        // --- 2. START DASHBOARD ---
+        function startDashboard(restroId) {
+            document.getElementById('screen-login').classList.add('hidden');
+            document.getElementById('screen-register').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+
+            // Profile Listener
+            onSnapshot(doc(db, "restaurants", restroId), (docSnap) => {
+                if(docSnap.exists()){
+                    const d = docSnap.data();
+                    document.getElementById('sidebarRestroName').innerText = d.name;
+                    document.getElementById('setRestroName').value = d.name;
+                    document.getElementById('setUpi').value = d.upiId || "";
+
+                    if(d.status === 'pending') {
+                        document.getElementById('pendingAlert').classList.remove('hidden');
+                        document.getElementById('statusBadge').classList.add('hidden');
+                    } else {
+                        document.getElementById('pendingAlert').classList.add('hidden');
+                        document.getElementById('statusBadge').classList.remove('hidden');
+                    }
+                }
+            });
+
+            listenBookings(restroId);
+            listenTables(restroId);
+            listenMenu(restroId);
+        }
+
+        // --- 3. NAVIGATION ---
+        window.nav = (viewId) => {
+            ['bookings', 'tables', 'menu', 'settings'].forEach(v => {
+                document.getElementById('view-'+v).classList.add('hidden');
+                document.getElementById('nav-'+v).classList.remove('bg-orange-500/20', 'text-orange-400');
+                document.getElementById('nav-'+v).classList.add('text-slate-400');
+            });
+            document.getElementById('view-'+viewId).classList.remove('hidden');
+            document.getElementById('nav-'+viewId).classList.remove('text-slate-400');
+            document.getElementById('nav-'+viewId).classList.add('bg-orange-500/20', 'text-orange-400');
+            
+            const titles = { 'bookings': 'Live Bookings', 'tables': 'Manage Tables', 'menu': 'Menu Editor', 'settings': 'Business Setup' };
+            document.getElementById('pageTitle').innerText = titles[viewId];
+            if(window.innerWidth < 768) toggleSidebar();
+        };
+
+        window.toggleSidebar = () => document.getElementById('sidebar').classList.toggle('-translate-x-full');
+        window.logout = () => { localStorage.clear(); location.reload(); };
+
+        // --- 4. SETTINGS (UPI UPDATE) ---
+        window.updateProfile = async () => {
+            const newName = document.getElementById('setRestroName').value.trim();
+            const newUpi = document.getElementById('setUpi').value.trim();
+            if(!newName) return Swal.fire('Error', 'Name cannot be blank', 'error');
+            await updateDoc(doc(db, "restaurants", myRestroId), { name: newName, upiId: newUpi });
+            Swal.fire({toast:true, position:'top-end', icon:'success', title:'Profile Updated', showConfirmButton:false, timer:2000});
+        };
+
+        window.clearUpi = async () => {
+            if(confirm("Delete UPI? Customers won't be able to pay advance online.")) {
+                await updateDoc(doc(db, "restaurants", myRestroId), { upiId: "" });
+                document.getElementById('setUpi').value = "";
+                Swal.fire('Cleared', 'UPI ID deleted.', 'info');
+            }
+        };
+
+        // --- 5. BOOKINGS & ASSIGN TABLE ---
+        function listenBookings(restroId) {
+            const q = query(collection(db, "chain_bookings"), where("restaurantId", "==", restroId));
+            onSnapshot(q, (snap) => {
+                const tbody = document.getElementById('bookingsList'); tbody.innerHTML = "";
+                let count = 0; let advance = 0;
+
+                snap.forEach(d => {
+                    const b = { id: d.id, ...d.data() };
+                    if(b.status === 'pending_verification' || b.status === 'confirmed') {
+                        count++;
+                        if(b.status === 'confirmed') advance += parseInt(b.advancePaid);
+                        
+                        let statusUI = ''; let actionUI = '';
+
+                        // UTR Verification UI
+                        if(b.status === 'pending_verification') {
+                            statusUI = `
+                                <div class="text-xs font-black text-amber-600 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200 animate-pulse inline-block mb-1"><i class="fas fa-shield-alt"></i> Verify UTR</div>
+                                <div class="text-[11px] font-black text-slate-800 uppercase tracking-widest bg-slate-100 px-2 py-1 rounded inline-block">Ref: ${b.utrNumber}</div>`;
+                            actionUI = `
+                                <div class="flex gap-2 justify-end">
+                                    <button onclick="approvePayment('${b.id}')" class="bg-green-500 text-white px-4 py-2.5 rounded-xl text-xs font-black hover:bg-green-600 shadow-md transition transform active:scale-95">Approve</button>
+                                    <button onclick="rejectPayment('${b.id}')" class="bg-white text-red-500 border border-red-200 px-4 py-2.5 rounded-xl text-xs font-black hover:bg-red-50 transition transform active:scale-95">Reject</button>
+                                </div>`;
+                        } 
+                        // Assign Table UI
+                        else if (b.status === 'confirmed') {
+                            statusUI = `<span class="bg-green-100 text-green-700 px-4 py-2 rounded-xl text-xs font-black border border-green-200 inline-block"><i class="fas fa-check-circle"></i> ₹${b.advancePaid} PAID</span>`;
+                            actionUI = `<button onclick="assignTableAndComplete('${b.id}')" class="bg-gradient-brand text-white w-full max-w-[200px] py-3 rounded-xl text-xs font-black shadow-lg shadow-orange-500/30 hover:scale-105 transition duration-300">Assign Table & Done</button>`;
+                        }
+
+                        tbody.innerHTML += `
+                            <tr class="hover:bg-slate-50 transition border-b border-slate-50 last:border-0 border-l-4 ${b.status === 'confirmed' ? 'border-green-500' : 'border-amber-400'}">
+                                <td class="p-5">
+                                    <div class="font-black text-slate-800 text-base mb-0.5">${b.userName}</div>
+                                    <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest"><i class="fas fa-phone-alt"></i> ${b.userPhone}</div>
+                                </td>
+                                <td class="p-5 font-black text-xl text-slate-700">${b.pax} <span class="text-[10px] uppercase text-slate-400">Pax</span></td>
+                                <td class="p-5">${statusUI}</td>
+                                <td class="p-5 text-right">${actionUI}</td>
+                            </tr>
+                        `;
+                    }
+                });
+                
+                document.getElementById('statBookings').innerText = count; 
+                document.getElementById('statAdvance').innerText = advance;
+                document.getElementById('noBookingsMsg').classList.toggle('hidden', count > 0);
+            });
+        }
+
+        window.approvePayment = async (id) => { if(confirm("Approve this payment?")) await updateDoc(doc(db, "chain_bookings", id), { status: 'confirmed' }); };
+        window.rejectPayment = async (id) => { if(confirm("Reject fake payment?")) await updateDoc(doc(db, "chain_bookings", id), { status: 'rejected' }); };
+
+        // ** ASSIGN TABLE FEATURE **
+        window.assignTableAndComplete = async (bookingId) => {
+            const qTables = query(collection(db, "restaurants", myRestroId, "tables"), where("status", "==", "free"));
+            const snapTables = await getDocs(qTables);
+            
+            let tableOptions = {};
+            snapTables.forEach(d => { let t = d.data(); tableOptions[d.id] = `${t.name} (Seats: ${t.capacity})`; });
+
+            if(Object.keys(tableOptions).length === 0) return Swal.fire('Full House', 'No free tables available right now. Mark a table free first.', 'warning');
+
+            const { value: selectedTableId } = await Swal.fire({
+                title: 'Assign Table to Guest',
+                text: 'Guest will receive a popup on their phone.',
+                input: 'select',
+                inputOptions: tableOptions,
+                inputPlaceholder: '-- Select a Free Table --',
+                showCancelButton: true,
+                confirmButtonColor: '#f97316',
+                confirmButtonText: 'Assign Table',
+                customClass: { popup: 'rounded-3xl' },
+                inputValidator: (value) => { return new Promise((resolve) => { if (value) resolve(); else resolve('Please select a table!'); }); }
+            });
+
+            if (selectedTableId) {
+                const tableName = tableOptions[selectedTableId].split(' (')[0];
+                await updateDoc(doc(db, "chain_bookings", bookingId), { status: 'completed', assignedTableId: selectedTableId, assignedTableName: tableName });
+                await updateDoc(doc(db, "restaurants", myRestroId, "tables", selectedTableId), { status: 'occupied' });
+                Swal.fire({toast:true, position:'top-end', icon:'success', title:`Table ${tableName} assigned!`, showConfirmButton:false, timer:2000});
+            }
+        };
+
+        // --- 6. TABLE MANAGEMENT ---
+        function listenTables(restroId) {
+            onSnapshot(collection(db, "restaurants", restroId, "tables"), (snap) => {
+                const grid = document.getElementById('tablesGrid'); grid.innerHTML = "";
+                snap.forEach(doc => {
+                    const t = { id: doc.id, ...doc.data() };
+                    const isFree = t.status === 'free';
+                    const bg = isFree ? 'bg-white border-green-200' : 'bg-slate-100 border-red-200 opacity-90';
+                    const btn = isFree 
+                        ? `<button onclick="toggleTable('${t.id}', 'occupied')" class="text-[10px] font-black text-red-600 bg-red-50 px-3 py-2.5 rounded-xl w-full mt-3 border border-red-100 hover:bg-red-100 transition uppercase tracking-widest">Mark Occupied</button>`
+                        : `<button onclick="toggleTable('${t.id}', 'free')" class="text-[10px] font-black text-green-600 bg-green-50 px-3 py-2.5 rounded-xl w-full mt-3 border border-green-100 hover:bg-green-100 transition uppercase tracking-widest">Mark Free</button>`;
+                    
+                    grid.innerHTML += `
+                        <div class="p-5 rounded-3xl border shadow-sm ${bg} transition duration-300 hover:shadow-md relative group">
+                            <button onclick="deleteTable('${t.id}')" class="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100"><i class="fas fa-trash"></i></button>
+                            <h4 class="font-black text-2xl text-slate-800 mb-1">${t.name}</h4>
+                            <div class="text-[10px] text-slate-500 font-bold mb-3 uppercase tracking-widest"><i class="fas fa-users"></i> ${t.capacity} Seats</div>
+                            <div class="text-[10px] font-black uppercase tracking-widest ${isFree ? 'text-green-500' : 'text-red-500'} flex items-center gap-1 bg-white/50 w-fit px-2 py-1 rounded-md">
+                                <i class="fas ${isFree ? 'fa-check-circle' : 'fa-times-circle'}"></i> ${t.status}
+                            </div>
+                            ${btn}
+                        </div>`;
+                });
+            });
+        }
+        window.addTable = async () => {
+            const name = document.getElementById('tName').value, cap = document.getElementById('tCap').value;
+            if(!name || !cap) return;
+            await addDoc(collection(db, "restaurants", myRestroId, "tables"), { name: name, capacity: parseInt(cap), status: 'free' });
+            document.getElementById('tName').value = ''; document.getElementById('tCap').value = '';
+        };
+        window.toggleTable = async (id, status) => await updateDoc(doc(db, "restaurants", myRestroId, "tables", id), { status: status });
+        window.deleteTable = async (id) => { if(confirm("Delete table?")) await deleteDoc(doc(db, "restaurants", myRestroId, "tables", id)); };
+
+        // --- 7. MENU MANAGEMENT ---
+        function listenMenu(restroId) {
+            onSnapshot(collection(db, "restaurants", restroId, "menu"), (snap) => {
+                const tbody = document.getElementById('menuList'); tbody.innerHTML = "";
+                snap.forEach(doc => {
+                    const m = { id: doc.id, ...doc.data() };
+                    const dotClass = m.type === 'veg' ? 'text-green-500 border-green-200 bg-green-50' : 'text-red-500 border-red-200 bg-red-50';
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-50 border-b border-slate-50 transition">
+                            <td class="p-5 flex items-center gap-3">
+                                <div class="w-4 h-4 rounded-sm border ${dotClass} flex items-center justify-center flex-shrink-0"><i class="fas fa-circle text-[8px]"></i></div>
+                                <div>
+                                    <div class="font-black text-slate-800 text-base mb-0.5">${m.name}</div>
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">${m.category || 'Item'}</div>
+                                </div>
+                            </td>
+                            <td class="p-5 font-black text-slate-700 text-center text-lg">₹${m.price}</td>
+                            <td class="p-5 text-right"><button onclick="deleteMenu('${m.id}')" class="text-slate-400 hover:text-red-500 bg-white shadow-sm p-3 rounded-xl border border-slate-200 transition"><i class="fas fa-trash"></i></button></td>
+                        </tr>`;
+                });
+            });
+        }
+        window.addMenuItem = async () => {
+            const name = document.getElementById('mName').value, cat = document.getElementById('mCat').value, price = document.getElementById('mPrice').value, type = document.getElementById('mType').value;
+            if(!name || !price) return;
+            await addDoc(collection(db, "restaurants", myRestroId, "menu"), { name: name, category: cat, price: parseInt(price), type: type });
+            document.getElementById('mName').value = ''; document.getElementById('mCat').value = ''; document.getElementById('mPrice').value = '';
+        };
+        window.deleteMenu = async (id) => { if(confirm("Remove item?")) await deleteDoc(doc(db, "restaurants", myRestroId, "menu", id)); };
+
+    </script>
+</body>
+</html>
